@@ -77,13 +77,16 @@ while true; do curl -s -o /dev/null http://localhost:5000/error; sleep 0.5; done
 ## Screenshots
 
 ### Grafana Dashboard
-![Grafana Dashboard](screenshots/grafana-dashboard.png)
+![Grafana Dashboard](screenshots/dashboard.jpeg)
 
 ### Log Analysis (Grafana Explore with Loki)
-![Log Analysis](screenshots/loki-logs.png)
+![Log Analysis](screenshots/logs.jpeg)
 
 ### Alerting Rules
-![Alerting Rules](screenshots/alerting-rules.png)
+![Alerting Rules](screenshots/rules.jpeg)
+
+### Alert Simulation
+![Alert Simulation](screenshots/scriptrunning.jpeg)
 
 ## Analysis
 
