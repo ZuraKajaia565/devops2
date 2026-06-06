@@ -1,0 +1,106 @@
+{
+  "title": "Application Dashboard",
+  "uid": "app-dashboard-uid",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "title": "Requests per Second",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(app_requests_total[1m])",
+          "legendFormat": "{{endpoint}} {{method}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      }
+    },
+    {
+      "title": "Errors per Second",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(app_errors_total[1m])",
+          "legendFormat": "{{endpoint}} {{method}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      }
+    },
+    {
+      "title": "Total Requests",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "app_requests_total",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      }
+    },
+    {
+      "title": "Total Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 8 },
+      "targets": [
+        {
+          "expr": "app_errors_total",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      }
+    },
+    {
+      "title": "Error Rate (per minute)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "rate(app_errors_total[1m]) * 60",
+          "legendFormat": "errors/min",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      }
+    }
+  ]
+}

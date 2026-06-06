@@ -1,0 +1,2 @@
+# Prometheus alert rules are managed via Prometheus configuration.
+# View them in Grafana: Alerting → Alert rules → switch datasource to "Prometheus".
