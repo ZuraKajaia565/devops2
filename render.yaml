@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: devops-observability-app
+    runtime: docker
+    plan: free
+    dockerContext: ./app
+    dockerfilePath: ./app/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: LOG_DIR
+        value: /tmp/app-logs

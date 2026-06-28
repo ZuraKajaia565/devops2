@@ -1,0 +1,10 @@
+.env
+*.pyc
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+reports/
+logs/
+trivy-report.*
+gitleaks-report.*

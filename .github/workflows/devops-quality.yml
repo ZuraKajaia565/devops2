@@ -1,0 +1,133 @@
+name: DevOps Quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test and lint dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run unit tests
+        run: python -m pytest
+        env:
+          LOG_DIR: logs/test
+
+      - name: Run lint
+        run: ruff check .
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config
+
+      - name: Build application image
+        run: docker compose build app
+
+      - name: Start observability stack
+        run: docker compose up -d
+
+      - name: Wait for health endpoints
+        shell: bash
+        run: |
+          for i in {1..30}; do
+            curl -fsS http://localhost:5000/health && break
+            sleep 2
+          done
+          curl -fsS http://localhost:5000/
+          curl -fsS http://localhost:5000/metrics | grep app_requests_total
+          curl -fsS http://localhost:9090/-/ready
+          curl -fsS http://localhost:3000/api/health
+          curl -fsS http://localhost:3100/ready
+
+      - name: Show running services
+        run: docker compose ps
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency vulnerability scan
+        uses: pypa/gh-action-pip-audit@v1.0.8
+        with:
+          inputs: app/requirements.txt
+
+      - name: Secret scan
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.18.4 detect --source /repo --no-git --redact
+
+      - name: Dockerfile lint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: app/Dockerfile
+
+      - name: Build application image
+        run: docker compose build app
+
+      - name: Container vulnerability scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: devops2-app:latest
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+  deploy-render:
+    runs-on: ubuntu-latest
+    needs: [test-and-lint, validate, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Trigger Render deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::Missing RENDER_DEPLOY_HOOK_URL secret. Add the Render deploy hook URL in GitHub repository secrets."
+            exit 1
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Verify live Render health endpoint
+        env:
+          LIVE_APP_URL: ${{ secrets.LIVE_APP_URL }}
+        run: |
+          if [ -z "$LIVE_APP_URL" ]; then
+            echo "LIVE_APP_URL secret not set; skipping live health verification."
+            exit 0
+          fi
+          for i in {1..30}; do
+            if curl -fsS "$LIVE_APP_URL/health"; then
+              echo "Live application is healthy."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Live application did not become healthy after deployment."
+          exit 1

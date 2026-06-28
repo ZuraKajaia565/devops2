@@ -1,2 +1,65 @@
-# Prometheus alert rules are managed via Prometheus configuration.
-# View them in Grafana: Alerting → Alert rules → switch datasource to "Prometheus".
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: app-alerts
+    folder: Application
+    interval: 10s
+    rules:
+      - uid: high-error-rate
+        title: HighErrorRate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              datasource:
+                type: prometheus
+                uid: prometheus
+              editorMode: code
+              expr: rate(app_errors_total[1m])
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0.0833
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: High error rate detected
+          description: Error rate is above 5 errors per minute for 1 minute.
+        labels:
+          severity: critical
+        isPaused: false
