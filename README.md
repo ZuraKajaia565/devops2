@@ -39,21 +39,6 @@ The project runs completely locally with Docker Compose:
 | Loki | Stores application logs; accessed through Grafana or Loki API | http://localhost:3100/ready |
 | Promtail | Ships JSON log files from the app container to Loki | Internal service |
 
-### Architecture Diagram
-
-```mermaid
-flowchart LR
-    User[User / Alert Simulation] --> App[Flask App]
-    App --> Metrics[/metrics endpoint]
-    App --> JsonLogs[JSON log file]
-    Metrics --> Prometheus[Prometheus scrape job]
-    Prometheus --> PromAlerts[Prometheus HighErrorRate rule]
-    Prometheus --> GrafanaMetrics[Grafana dashboards]
-    Prometheus --> GrafanaAlerts[Grafana managed alert]
-    JsonLogs --> Promtail[Promtail]
-    Promtail --> Loki[Loki]
-    Loki --> GrafanaLogs[Grafana Explore log analysis]
-```
 
 ### CI/CD Workflow Diagram
 
