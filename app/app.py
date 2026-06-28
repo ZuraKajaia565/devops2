@@ -1,12 +1,13 @@
+import logging
+import datetime
+import json
 import os
 import random
 import time
-import logging
-import json
-import datetime
+
+from flask import Flask, Response, request
 from markupsafe import escape
-from flask import Flask, request, Response
-from prometheus_client import Counter, generate_latest, REGISTRY, CONTENT_TYPE_LATEST
+from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, Counter, generate_latest
 import structlog
 
 app = Flask(__name__)
