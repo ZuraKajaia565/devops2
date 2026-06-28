@@ -1,14 +1,14 @@
-import logging
 import datetime
 import json
+import logging
 import os
 import random
 import time
 
+import structlog
 from flask import Flask, Response, request
 from markupsafe import escape
 from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, Counter, generate_latest
-import structlog
 
 app = Flask(__name__)
 
@@ -42,7 +42,10 @@ APP_UI_HTML = """<!doctype html>
     <header>
       <h1>DevOps Observability App</h1>
       <p class="status"><span class="dot"></span> Application UI is running</p>
-      <p>This screen is the human-facing app page. The project also exposes JSON APIs, Prometheus metrics, structured logs, and alert simulation endpoints.</p>
+      <p>
+        This screen is the human-facing app page. The project also exposes JSON APIs, Prometheus metrics,
+        structured logs, and alert simulation endpoints.
+      </p>
     </header>
     <section class="grid">
       <div class="card">
@@ -92,7 +95,10 @@ FEEDBACK_FORM_HTML = """<!doctype html>
     form { display: grid; gap: 14px; background: #fff; border: 1px solid #dbe2ef; border-radius: 8px; padding: 20px; }
     label { font-weight: 700; }
     input, textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #b7c3d7; border-radius: 6px; font: inherit; }
-    button { width: max-content; padding: 10px 14px; border: 0; border-radius: 6px; background: #2457c5; color: #fff; font-weight: 700; cursor: pointer; }
+    button {
+      width: max-content; padding: 10px 14px; border: 0; border-radius: 6px;
+      background: #2457c5; color: #fff; font-weight: 700; cursor: pointer;
+    }
     a { color: #2457c5; font-weight: 700; text-decoration: none; }
   </style>
 </head>

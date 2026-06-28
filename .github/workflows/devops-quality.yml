@@ -42,6 +42,11 @@ jobs:
       - name: Build application image
         run: docker compose build app
 
+      - name: Prepare writable log directory
+        run: |
+          mkdir -p logs/app
+          chmod -R 777 logs
+
       - name: Start observability stack
         run: docker compose up -d
 
@@ -107,12 +112,14 @@ jobs:
         run: docker compose build app
 
       - name: Container vulnerability scan
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref: devops2-app:latest
-          format: table
-          severity: HIGH,CRITICAL
-          exit-code: "1"
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.52.2 image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --format table \
+            devops2-app:latest
 
   deploy-render:
     runs-on: ubuntu-latest
